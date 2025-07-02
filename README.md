@@ -1,1 +1,3 @@
-# Api-Paste-Create
+run `node index.js`
+
+buid `npm install`
