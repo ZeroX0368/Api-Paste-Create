@@ -24,10 +24,15 @@ app.get('/api/sourced', async (req, res) => {
 
   try {
     const pasteUrl = await createSourcebinPaste(finalContent, title);
+    // Extract the paste key from the URL to create raw URL
+    const pasteKey = pasteUrl.split('/').pop();
+    const rawUrl = `https://cdn.sourceb.in/bins/${pasteKey}/0`;
+    
     res.json({ 
       success: true,
       credits: 'bucu0368',
       url: pasteUrl,
+      raw: rawUrl,
       content: finalContent,
       title: title
     });
@@ -102,6 +107,8 @@ function createSourcebinPaste(content, title = "API Generated Paste") {
   });
 }
 
+
+
 // Basic route for testing
 app.get('/', (req, res) => {
   res.json({ 
@@ -117,8 +124,7 @@ app.get('/', (req, res) => {
       },
       examples: [
         'GET /api/sourced?content=Hello World&title=My Paste',
-        'GET /api/sourced?prompt=your_text_here',
-        'GET /api/sourced?description=some text&title=Test'
+        'GET /api/sourced?prompt=your_text_here'
       ]
     }
   });
