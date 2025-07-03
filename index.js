@@ -6,8 +6,31 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// API key configuration
+const VALID_API_KEY = process.env.API_KEY || "dabibanban";
+
+// Middleware to verify API key
+function verifyApiKey(req, res, next) {
+  const apikey = req.query.apikey || req.headers['x-api-key'];
+  
+  if (!apikey) {
+    return res.status(401).json({
+      error: "API key required for authentication",
+      message: "Provide apikey as query parameter or x-api-key header"
+    });
+  }
+  
+  if (apikey !== VALID_API_KEY) {
+    return res.status(401).json({
+      error: "Invalid or expired api key."
+    });
+  }
+  
+  next();
+}
+
 // API endpoint to create paste on sourcebin
-app.get('/api/sourced', async (req, res) => {
+app.get('/api/sourced', verifyApiKey, async (req, res) => {
   const prompt = req.query.prompt;
   const content = req.query.content;
   const description = req.query.description;
@@ -116,15 +139,17 @@ app.get('/', (req, res) => {
     message: 'Sourcebin API Server',
     usage: {
       endpoint: '/api/sourced',
+      authentication: 'API key required via "apikey" query parameter or "X-API-Key" header',
       parameters: {
+        'apikey (required)': 'API key for authentication',
         'content (required)': 'Text content for the paste',
         'title (optional)': 'Title for the paste',
         'prompt (alternative)': 'Alternative to content parameter',
         'description (alternative)': 'Alternative to content parameter'
       },
       examples: [
-        'GET /api/sourced?content=Hello World&title=My Paste',
-        'GET /api/sourced?prompt=your_text_here'
+        'GET /api/sourced?content=Hello World&title=My Paste&apikey=here apikey',
+        'GET /api/sourced?prompt=your_text_here&apikey=here apikey'
       ]
     }
   });
@@ -135,4 +160,3 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Try: http://localhost:${PORT}/api/sourced?prompt=test`);
 });
-
